@@ -10,11 +10,14 @@ export const ItemCart = ({ productInCart, removeProductInCart }: Props) => {
   const totalPrice = productInCart.productPrice * productInCart.productQuantity;
   // 10% si hay mas de 3
   const discountedPrice = productInCart.productQuantity > 3 ? totalPrice * 0.9 : totalPrice;
+  const urlImage = productInCart.productImage && productInCart.productImage.includes('https://') 
+  ? productInCart.productImage.match(/https:\/\/\S+/)?.[0] 
+  : '/images/placeholder.webp';
   return (
     <div className="flex items-center space-x-4 p-2 text-xs relative">
       <Trash2Icon size={20} className="text-red-600 absolute right-0 top-0 cursor-pointer" onClick={() => removeProductInCart(productInCart.id)} />
       <div className="flex-shrink-0">
-        <img src={'/images/placeholder.webp'} alt={productInCart.productTitle} width={64} height={64} className="rounded-md" />
+        <img src={urlImage} alt={productInCart.productTitle} width={70} height={70} className="rounded-md" />
       </div>
       <div className="flex-grow flex flex-col gap-y-1">
         <h3 className="font-medium text-balance">{productInCart.productTitle}</h3>
