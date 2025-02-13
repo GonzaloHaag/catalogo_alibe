@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { Header, ProductsContainer, SearchProducts } from "./components"
+import { Header, Pagination, ProductsContainer, SearchProducts } from "./components"
 import { Product } from "./interfaces/product-interface";
 import { Data } from "./interfaces/data-interface";
 import { useDebounce } from "./hooks/use-debounce";
@@ -16,7 +16,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const debouncedSearch = useDebounce(searchValue);
-  const API_URL = debouncedSearch ? `https://rest.contabilium.com/api/conceptos/search?pageSize=20&filtro=${debouncedSearch}` : "https://rest.contabilium.com/api/conceptos/search?pageSize=20";
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalesPages] = useState(1);
+  const API_URL = debouncedSearch ? `https://rest.contabilium.com/api/conceptos/search?pageSize=20&filtro=${debouncedSearch}` : `https://rest.contabilium.com/api/conceptos/search?pageSize=20&page=${currentPage}`;
   const headers = {
     'Authorization': `Bearer ${import.meta.env.VITE_BEARER_TOKEN}`,
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -31,6 +33,7 @@ function App() {
         });
         const data: Data = await response.json();
         setDataProducts(data.Items);
+        setTotalesPages(Math.ceil(data.TotalItems / data.TotalPage))
       }
       catch (e) {
         console.error(e);
@@ -41,26 +44,26 @@ function App() {
     };
 
     fetchData();
-  }, [debouncedSearch]);
+  }, [debouncedSearch,currentPage]);
 
   const searchOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   }
-  function addProductCart(id: number, productTitle: string, productPrice: number, productQuantity: number,productImage:string) {
+  function addProductCart(id: number, productTitle: string, productPrice: number, productQuantity: number, productImage: string) {
     const newCart = [...cart];
     const estaEnCarrito = newCart.find((p) => p.id === id);
 
     if (estaEnCarrito) {
       // Si el producto ya está en el carrito, actualiza la cantidad
       estaEnCarrito.productQuantity += productQuantity;
-      toast.success('Cantidad actualizada!',{
-        style:{ backgroundColor:'#16a34a',color:"white" }
+      toast.success('Cantidad actualizada!', {
+        style: { backgroundColor: '#16a34a', color: "white" }
       })
     } else {
       // Si no está en el carrito, agrega el nuevo producto
-      newCart.push({ id, productTitle, productPrice, productQuantity,productImage });
-      toast.success('Producto agregado!',{
-        style:{ backgroundColor:'#16a34a',color:"white" }
+      newCart.push({ id, productTitle, productPrice, productQuantity, productImage });
+      toast.success('Producto agregado!', {
+        style: { backgroundColor: '#16a34a', color: "white" }
       })
     }
 
@@ -72,19 +75,17 @@ function App() {
     localStorage.setItem('carrito', JSON.stringify(cart)); // cada vez que cart cambia lo actualizamos
   }, [cart]);
 
-  function removeProductInCart(productId:number) {
+  function removeProductInCart(productId: number) {
     const newCart = cart.filter((product) => product.id !== productId);
     setCart(newCart);
-    toast.warning('Producto eliminado!',{
+    toast.warning('Producto eliminado!', {
       style: { backgroundColor: "#dc2626", color: "white" }
     })
   }
 
-
- 
   return (
     <>
-      <Header cart={cart} removeProductInCart={ removeProductInCart } />
+      <Header cart={cart} removeProductInCart={removeProductInCart} />
       <main className="flex flex-col gap-y-4 p-4 w-full md:max-w-6xl md:mx-auto">
         <h1 className="text-center text-lg font-semibold">Catálogo de productos</h1>
         <SearchProducts searchValue={searchValue} searchOnChange={searchOnChange} />
@@ -99,6 +100,11 @@ function App() {
             <ProductsContainer products={dataProducts} addProductCart={addProductCart} />
           )
         }
+        <Pagination
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+        />
       </main>
       <Toaster position="bottom-left" duration={1500} />
     </>
