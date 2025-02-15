@@ -9,7 +9,7 @@ export const ProductsContainer = ({ products,addProductCart }: Props) => {
     const productsFilter = products.filter((product) => product.Estado === 'Activo');
 
     return (
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {
                 productsFilter.length > 0 ? (
                     productsFilter.map((product) => (
