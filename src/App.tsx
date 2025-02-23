@@ -106,7 +106,7 @@ function App() {
           totalPages={totalPages}
         />
       </main>
-      <Toaster position="bottom-left" duration={1500} />
+      <Toaster position="bottom-center" duration={1500} />
     </>
   )
 }
