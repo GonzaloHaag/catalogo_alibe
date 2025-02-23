@@ -14,7 +14,7 @@ export const Header = ({ cart, removeProductInCart }: Props) => {
     // Calcular el total general del pedido
     const totalOrderPrice = cart.reduce((total, item) => {
         const itemTotalPrice = item.productPrice * item.productQuantity;
-        return total + (item.productQuantity > 3 ? itemTotalPrice * 0.9 : itemTotalPrice);
+        return total + (item.productQuantity > 2 ? itemTotalPrice * 0.9 : itemTotalPrice);
     }, 0);
     // Función para generar el mensaje de WhatsApp
     const generateWhatsAppMessage = () => {
@@ -23,14 +23,14 @@ export const Header = ({ cart, removeProductInCart }: Props) => {
         // Recorrer todos los productos en el carrito
         cart.forEach((item, index) => {
             const itemTotalPrice = item.productPrice * item.productQuantity;
-            const itemDiscountedPrice = item.productQuantity > 3 ? itemTotalPrice * 0.9 : itemTotalPrice;
+            const itemDiscountedPrice = item.productQuantity > 2 ? itemTotalPrice * 0.9 : itemTotalPrice;
 
             message += `Producto ${index + 1}:\n`;
             message += `- Nombre: ${item.productTitle}\n`;
             message += `- Cantidad: ${item.productQuantity}\n`;
             message += `- Precio unitario: $${item.productPrice.toFixed(2)}\n`;
             message += `- Precio total: $${itemDiscountedPrice.toFixed(2)}\n`;
-            if (item.productQuantity > 3) {
+            if (item.productQuantity > 2) {
                 message += `  (10% de descuento aplicado)\n`;
             }
             message += "\n"; // Salto de línea entre productos
@@ -39,7 +39,7 @@ export const Header = ({ cart, removeProductInCart }: Props) => {
         // Calcular el total general del pedido
         const totalOrderPrice = cart.reduce((total, item) => {
             const itemTotalPrice = item.productPrice * item.productQuantity;
-            return total + (item.productQuantity > 3 ? itemTotalPrice * 0.9 : itemTotalPrice);
+            return total + (item.productQuantity > 2 ? itemTotalPrice * 0.9 : itemTotalPrice);
         }, 0);
 
         message += `Total del pedido: $${totalOrderPrice.toFixed(2)}\n\n`;
@@ -47,7 +47,7 @@ export const Header = ({ cart, removeProductInCart }: Props) => {
 
         // Codificar el mensaje para el enlace de WhatsApp
         const encodedMessage = encodeURIComponent(message);
-        return `https://wa.me/543425111071?text=${encodedMessage}`
+        return `https://wa.me/543425332182?text=${encodedMessage}`
     };
     return (
         <header className="bg-white shadow-md h-20 px-4 sticky w-full top-0 z-10 flex">

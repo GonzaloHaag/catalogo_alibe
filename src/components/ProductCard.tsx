@@ -13,6 +13,8 @@ export const ProductCard = ({ product,addProductCart }: Props) => {
  const urlImage = product.Foto && product.Foto.includes('https://') 
   ? product.Foto.match(/https:\/\/\S+/)?.[0] 
   : '/images/placeholder.webp';
+
+  console.log(product);
     return (
         <div className="bg-white rounded-lg shadow-md">
             <div className="relative h-40 w-full">
