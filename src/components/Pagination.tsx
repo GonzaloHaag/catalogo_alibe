@@ -3,6 +3,8 @@ import { generatePaginationNumbers } from "@/lib/generate-pagination-numbers";
 export const Pagination = ({ currentPage, setCurrentPage, totalPages }: { currentPage: number, setCurrentPage: React.Dispatch<React.SetStateAction<number>>, totalPages: number }) => {
     const paginationNumbers = generatePaginationNumbers(currentPage, totalPages);
 
+    console.log(currentPage,totalPages);
+
     const handlePageChange = (page: number | string) => {
         if (typeof page === 'number') {
             setCurrentPage(page);
