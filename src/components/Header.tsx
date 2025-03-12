@@ -53,7 +53,7 @@ export const Header = ({ cart, removeProductInCart }: Props) => {
         <header className="bg-white shadow-md h-20 px-4 sticky w-full top-0 z-10 flex">
             <div className='w-full flex items-center justify-between md:max-w-6xl md:mx-auto'>
                 <a href='/' title='Logo alibe'>
-                    <img src="/images/logo.webp" alt="Logo alibe" width={140} height={120} loading="eager" className='aspect-video object-contain' />
+                    <img src="/images/logo.webp" alt="Logo alibe" width={140} height={120} loading="eager" />
                 </a>
                 <Sheet>
                     <SheetTrigger asChild>

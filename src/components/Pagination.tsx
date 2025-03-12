@@ -7,6 +7,8 @@ export const Pagination = ({ currentPage, setCurrentPage, totalPages }: { curren
 
     const handlePageChange = (page: number | string) => {
         if (typeof page === 'number') {
+            // Mover scroll al inicio 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Mueve al inicio con animación
             setCurrentPage(page);
         }
     };
