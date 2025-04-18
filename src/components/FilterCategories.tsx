@@ -46,7 +46,7 @@ export const FilterCategories = ({ categorySelected, handleCategorySelected } : 
               <h4 className="text-red-600 text-center text-base">Ocurrió un error</h4>
             </div>
           ) : (
-            <div className="flex lg:flex-wrap gap-2 items-center">
+            <div className="flex lg:flex-wrap overflow-x-auto gap-2 items-center">
               <Button variant={ categorySelected === null ? 'default' : 'outline' } title={'Todos'} size={'sm'} onClick={() => handleCategorySelected(null)}>
                 TODOS
               </Button>
