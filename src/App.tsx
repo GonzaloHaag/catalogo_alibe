@@ -1,60 +1,35 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { FilterCategories, Header, Pagination, ProductsContainer, SearchProducts } from "./components"
-import { Data } from "./interfaces/data-interface";
-import { useDebounce } from "./hooks/use-debounce";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { FilterCategories, Header, ProductsContainer, SearchProducts } from "./components";
 import { CartInterface } from "./interfaces/cart-interface";
 import { toast } from "sonner";
 import { Toaster } from './components/ui/sonner';
-import { getToken } from "./lib/fetch-token";
 import { useQuery } from "@tanstack/react-query";
+import { getAllProducts } from "./utils/get-products-paginated";
+import { useDebounce } from "./hooks/use-debounce";
 
 const cartLocalStorage = localStorage.getItem('carrito');
-
 const initialCart = cartLocalStorage ? JSON.parse(cartLocalStorage) : [];
+
 function App() {
   const [cart, setCart] = useState<CartInterface[] | []>(initialCart);
   const [searchValue, setSearchValue] = useState('');
   const debouncedSearch = useDebounce(searchValue);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalesPages] = useState(1);
   const [categorySelected, setCategorySelected] = useState<number | null>(null);
-  const PAGE_SIZE = 20;
-  const API_URL = debouncedSearch ? `https://rest.contabilium.com/api/conceptos/search?pageSize=${PAGE_SIZE}&filtro=${debouncedSearch}` : `https://rest.contabilium.com/api/conceptos/search?pageSize=${PAGE_SIZE}&page=${currentPage}`;
-  const fetchData = async () => {
-    const token = await getToken();
-    if (!token) return;
-    try {
-      const response = await fetch(API_URL, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      });
-      if (!response.ok) throw new Error("Error al obtener productos");
-      const data: Data = await response.json();
-      return data;
-    }
-    catch (e) {
-      console.error(e);
-    }
-  };
 
-  const { isLoading, error, data } = useQuery({
-    queryKey: ['products', debouncedSearch, currentPage],
-    queryFn: fetchData
+  // Reemplazamos useInfiniteQuery por useQuery para obtener todos los productos
+  const { data: allProducts = [], isLoading, error } = useQuery({
+    queryKey: ['all-products'],
+    queryFn: getAllProducts,
+    staleTime: 1000 * 60 * 60 * 4, // 4 horas
+    cacheTime: 1000 * 60 * 60 * 5, // 5 horas para mantener el caché
+    refetchOnWindowFocus: false, // Desactivar la recarga al cambiar de ventana
+    refetchOnReconnect: false, // No volver a cargar al reconectar
   });
-
-  useEffect(() => {
-    if (data?.TotalItems !== undefined) {
-      setTotalesPages(Math.ceil(data!.TotalItems / PAGE_SIZE))
-    }
-
-  }, [data])
 
   const searchOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-  }
+  };
+
   function addProductCart(id: number, productTitle: string, productPrice: number, productQuantity: number, productImage: string) {
     const newCart = [...cart];
     const estaEnCarrito = newCart.find((p) => p.id === id);
@@ -64,13 +39,13 @@ function App() {
       estaEnCarrito.productQuantity += productQuantity;
       toast.success('Cantidad actualizada!', {
         style: { backgroundColor: '#16a34a', color: "white" }
-      })
+      });
     } else {
       // Si no está en el carrito, agrega el nuevo producto
       newCart.push({ id, productTitle, productPrice, productQuantity, productImage });
       toast.success('Producto agregado!', {
         style: { backgroundColor: '#16a34a', color: "white" }
-      })
+      });
     }
 
     // Actualiza el estado del carrito
@@ -86,12 +61,20 @@ function App() {
     setCart(newCart);
     toast.warning('Producto eliminado!', {
       style: { backgroundColor: "#dc2626", color: "white" }
-    })
+    });
   }
 
   function handleCategorySelected(categoryId: number | null) {
     setCategorySelected(categoryId);
   }
+
+  const filteredProducts = useMemo(() => {
+    return allProducts.filter(product => {
+      const matchSearch = product.Nombre.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchCategory = categorySelected === null || Number(product.IdRubro) === categorySelected;
+      return matchSearch && matchCategory;
+    });
+  }, [allProducts, debouncedSearch, categorySelected]); // Dependencias
 
   return (
     <>
@@ -100,29 +83,24 @@ function App() {
         <h1 className="text-center text-lg font-semibold">Catálogo de productos</h1>
         <SearchProducts searchValue={searchValue} searchOnChange={searchOnChange} />
         <FilterCategories categorySelected={categorySelected} handleCategorySelected={handleCategorySelected} />
-        {
-          isLoading ? (
-            <div className="flex items-center justify-center">
-              <svg width={40} height={40} fill="#dc2626" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><g><circle cx="12" cy="3" r="1"><animate id="spinner_7Z73" begin="0;spinner_tKsu.end-0.5s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="16.50" cy="4.21" r="1"><animate id="spinner_Wd87" begin="spinner_7Z73.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="7.50" cy="4.21" r="1"><animate id="spinner_tKsu" begin="spinner_9Qlc.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="19.79" cy="7.50" r="1"><animate id="spinner_lMMO" begin="spinner_Wd87.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="4.21" cy="7.50" r="1"><animate id="spinner_9Qlc" begin="spinner_Khxv.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="21.00" cy="12.00" r="1"><animate id="spinner_5L9t" begin="spinner_lMMO.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="3.00" cy="12.00" r="1"><animate id="spinner_Khxv" begin="spinner_ld6P.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="19.79" cy="16.50" r="1"><animate id="spinner_BfTD" begin="spinner_5L9t.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="4.21" cy="16.50" r="1"><animate id="spinner_ld6P" begin="spinner_XyBs.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="16.50" cy="19.79" r="1"><animate id="spinner_7gAK" begin="spinner_BfTD.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="7.50" cy="19.79" r="1"><animate id="spinner_XyBs" begin="spinner_HiSl.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><circle cx="12" cy="21" r="1"><animate id="spinner_HiSl" begin="spinner_7gAK.begin+0.1s" attributeName="r" calcMode="spline" dur="0.6s" values="1;2;1" keySplines=".27,.42,.37,.99;.53,0,.61,.73" /></circle><animateTransform attributeName="transform" type="rotate" dur="6s" values="360 12 12;0 12 12" repeatCount="indefinite" /></g></svg>
-            </div>
-          ) : error ? (
-            <div className="flex justify-center items-center text-center">
-              <h4 className="text-red-600 text-center text-base">Ocurrió un error</h4>
-            </div>
-          ) : (
-            <ProductsContainer products={data?.Items || []} addProductCart={addProductCart} />
-          )
-        }
-
-        <Pagination
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          totalPages={totalPages}
-        />
+        {isLoading ? (
+          <div className="w-full flex items-center justify-center">
+            <svg fill="#dc2626" width={50} height={50} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" /><path d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite" /></path></svg>
+          </div>
+        ) : error ? (
+          <p>Error al cargar productos: {(error as Error).message}</p>
+        ) : (
+          <>
+            <ProductsContainer
+              products={filteredProducts}
+              addProductCart={addProductCart}
+            />
+          </>
+        )}
       </main>
       <Toaster position="bottom-center" duration={1500} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
