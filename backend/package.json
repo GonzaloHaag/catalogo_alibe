@@ -1,0 +1,23 @@
+{
+  "name": "backend-alibe",
+  "version": "1.0.0",
+  "description": "Este sera el backend de alibe distribuidora",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "express",
+    "nodejs",
+    "cron",
+    "automatizacion"
+  ],
+  "author": "Gonzalo Haag",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "node-cron": "^4.0.0"
+  }
+}

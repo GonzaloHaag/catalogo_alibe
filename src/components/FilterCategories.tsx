@@ -1,6 +1,6 @@
-import { getToken } from "@/lib/fetch-token";
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "./ui/button";
+import { getAllCategories } from "@/utils/get-all-categories";
 
 interface Props { 
   categorySelected: number | null;
@@ -8,31 +8,13 @@ interface Props {
 }
 
 export const FilterCategories = ({ categorySelected, handleCategorySelected } : Props ) => {
-
-    const fetchCategories = async () => {
-        const token = await getToken();
-        if (!token) return;
-        try {
-          const response = await fetch('https://rest.contabilium.com/api/conceptos/rubros', {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-          });
-          if (!response.ok) throw new Error("Error al obtener las categorias");
-          const data: { Id:number, Nombre:string }[] = await response.json();
-          return data;
-        }
-        catch (e) {
-          console.error(e);
-        }
-      };
     const { data:categories, isLoading, error } = useQuery({
         queryKey:['categories'],
-        queryFn: fetchCategories,
+        queryFn: getAllCategories,
         staleTime: 1000 * 60 * 60 * 24 // 24 hours
     });
+
+    console.log(categorySelected);
 
   return (
     <div className="w-full">
@@ -52,8 +34,8 @@ export const FilterCategories = ({ categorySelected, handleCategorySelected } : 
               </Button>
               {
               categories?.map((category) => (
-                <Button key={ category.Id } variant={ categorySelected === category.Id ? 'default' : 'outline' } title={ category.Nombre } size={'sm'} onClick={() => handleCategorySelected(category.Id)}>
-                    { category.Nombre }
+                <Button key={ category.id } variant={ categorySelected === category.id ? 'default' : 'outline' } title={ category.nombre } size={'sm'} onClick={() => handleCategorySelected(category.id)}>
+                    { category.nombre }
                 </Button>
               ))
             }

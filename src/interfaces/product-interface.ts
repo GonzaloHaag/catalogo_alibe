@@ -1,29 +1,12 @@
 export interface Product {
-    Id:               number;
-    Nombre:           string;
-    Codigo:           string;
-    CodigoOem:        string;
-    CodigoBarras:     string;
-    Descripcion:      string;
-    Precio:           number;
-    PrecioFinal:      number;
-    SincronizaStock:  boolean;
-    PrecioAutomatico: null;
-    SincronizaPrecio: boolean;
-    Iva:              number;
-    Rentabilidad:     number;
-    CostoInterno:     number;
-    Stock:            number;
-    StockMinimo:      number;
-    StockInventario:  number;
-    Observaciones:    string;
-    Estado:           string;
-    Tipo:             string;
-    IdRubro:          string;
-    IdSubrubro:       string;
-    Foto:             string;
-    AplicaRG5329:     boolean;
-    IDMoneda:         number;
-    ListasDePrecio:   null;
-    Items:            null;
+    id:number;
+    nombre:string;
+    Descripcion:string;
+    precio:number;
+    precio_final:number;
+    stock:number;
+    iva:number;
+    estado:string;
+    foto:string;
+    idRubro:string
 }
