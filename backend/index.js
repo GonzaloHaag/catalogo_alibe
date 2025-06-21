@@ -1,8 +1,8 @@
 const cron = require('node-cron');
 const { fetchAllProducts,fetchAllCategories } = require('./contabilium');
 
-// Ejecutar cada 2 horas
-cron.schedule('0 */2 * * *', async () => {
+// Ejecutar cada 2 minutos
+cron.schedule('*/2 * * * *', async () => {
   console.log('🕒 Ejecutando sincronización con Contabilium...');
   try {
     const productos = await fetchAllProducts();

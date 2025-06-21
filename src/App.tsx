@@ -3,7 +3,7 @@ import { FilterCategories, Header, ProductsContainer, SearchProducts } from "./c
 import { CartInterface } from "./interfaces/cart-interface";
 import { toast } from "sonner";
 import { Toaster } from './components/ui/sonner';
-import { useQuery } from "@tanstack/react-query";
+import { isError, useQuery } from "@tanstack/react-query";
 import { useDebounce } from "./hooks/use-debounce";
 import { getAllProducts } from "./utils/get-all-products";
 
@@ -17,15 +17,15 @@ function App() {
   const [categorySelected, setCategorySelected] = useState<number | null>(null);
   const [page, setPage] = useState(1); // Estado para la página actual
   // React Query para obtener los productos
-  const { data: products = [], isLoading, error } = useQuery(
+  const { data: products = [], isLoading, isError } = useQuery(
     ['products', page, debouncedSearch, categorySelected],
-    () => getAllProducts({ search:  debouncedSearch, categorySelected: categorySelected }),
+    () => getAllProducts({ search: debouncedSearch, categorySelected: categorySelected }),
     {
       keepPreviousData: true, // Mantiene los datos de la página anterior mientras se carga la nueva
       staleTime: 1000 * 60 * 5, // Tiempo en el que los datos se consideran frescos
     }
   );
-  
+
   // Manejadores de eventos para búsqueda y categorías
   const searchOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -74,28 +74,30 @@ function App() {
   return (
     <>
       <Header cart={cart} removeProductInCart={removeProductInCart} />
-      <main className="flex flex-col gap-y-4 p-4 w-full md:max-w-6xl md:mx-auto">
-        <h1 className="text-center text-lg font-semibold">Catálogo de productos</h1>
-        <SearchProducts searchValue={searchValue} searchOnChange={searchOnChange} />
-        <FilterCategories categorySelected={categorySelected} handleCategorySelected={handleCategorySelected} />
-        {
-          isLoading ? (
-            <div className="w-full flex items-center justify-center">
-              <svg fill="#dc2626" width={50} height={50} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25" /><path d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite" /></path></svg>
-            </div>
-          ) : error ? (
-            <p>Error al cargar productos: {(error as Error).message}</p>
-          ) : (
-            <div className="flex flex-col gap-y-6">
-              <ProductsContainer
-                products={products || []}
-                addProductCart={addProductCart}
-              />
-             
-            </div>
-          )
-        }
-      </main>
+       <main className="flex flex-col h-[calc(100vh-5rem)] py-10 w-full px-4 md:max-w-6xl md:mx-auto">
+         <div className="w-full grid grid-cols-1 md:grid-cols-8 items-center gap-y-4">
+           <section className="md:col-span-2">
+           <h1 className="text-base text-center text-red-400">Catálogo de productos</h1>
+           </section>
+           <section className="md:col-span-6">
+           <SearchProducts searchValue={searchValue} searchOnChange={searchOnChange} />
+           </section>
+         </div>
+         <div className="w-full grid grid-cols-1 md:grid-cols-8 h-full mt-6 gap-y-6">
+           <section className="col-span-2 bg-red-600 md:px-6">
+            <FilterCategories categorySelected={categorySelected} handleCategorySelected={handleCategorySelected} />
+           </section>
+           <section className="col-span-6 bg-red-900 h-full">
+              {isLoading ? (
+                <p className="text-center w-full">Cargando productos...</p>
+              ) : isError ? (
+                <p className="w-full text-center text-red-600">Ocurrió un error al obtener los productos</p>
+              ) : (
+                <ProductsContainer products={products || []} addProductCart={addProductCart} />
+              )}
+           </section>
+         </div>
+       </main>
       <Toaster position="bottom-center" duration={1500} />
     </>
   );
